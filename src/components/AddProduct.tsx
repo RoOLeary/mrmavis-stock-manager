@@ -18,7 +18,7 @@ const AddProduct = () => {
         title: productTitle,
         description: productDescription, // Product description
         price: productPrice,
-        isAvailable: productQuantity > 0, // Check availability based on quantity
+        isAvailable: (productQuantity > 0) ? true : false, // Check availability based on quantity
         quantity: productQuantity, // Product quantity
         type: productType, // Product type
       });

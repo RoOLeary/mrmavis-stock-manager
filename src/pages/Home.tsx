@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const Home = () => {
@@ -38,7 +38,7 @@ const Home = () => {
         if (value === 'all') {
             setFilteredProducts(products);
         } else {
-            setFilteredProducts(products.filter(product => product.type === value));
+            setFilteredProducts(products.filter(product => product?.type === value));
         }
     };
 
@@ -100,19 +100,13 @@ const Home = () => {
                                 {product.isAvailable ? "In Stock" : "Out of Stock"}
                             </p>
                             <div className="flex gap-2">
-                                <a
-                                    className={`mt-4 p-2 rounded ${product.isAvailable ? 'bg-green-500 hover:bg-green-600' : 'bg-gray-500'} text-white`}
-                                    onClick={() => handleMoreInfoClick(product.id)}
-                                >
-                                    More Info
-                                </a>
-                               
+                                
                                 <button
                                     className={`mt-4 p-2 rounded ${product.isAvailable ? 'bg-green-500 hover:bg-green-600' : 'bg-gray-500'} text-white`}
                                     onClick={() => handleMoreInfoClick(product.id)}
                                     disabled={!product.isAvailable}
                                 >
-                                   Buy Now
+                                   {product.isAvailable ? 'Buy Now' : 'Out of Stock'}
                                 </button>
                                 
                             </div>

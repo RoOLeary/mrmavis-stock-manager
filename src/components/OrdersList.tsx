@@ -8,7 +8,7 @@ import {
 } from '../services/productApi';
 import { useNavigate } from 'react-router-dom';
 
-const ProductList = () => {
+const OrdersList = () => {
   const { data: products, isLoading, error, refetch } = useGetProductListQuery(); // Fetch tasks
   const [toggleProductAvailability] = useToggleProductAvailabilityMutation(); // Hook to toggle product availability
   const [deleteProduct] = useDeleteProductMutation();
@@ -45,8 +45,8 @@ const ProductList = () => {
     navigate('/product/add-product');
   };
 
-  const goToOrders = () => {
-    navigate('/orders');
+  const goToProducts = () => {
+    navigate('/products');
   };
 
   // Save the changes
@@ -153,24 +153,15 @@ const ProductList = () => {
       </div>
 
       {/* Control Buttons */}
-      <div className="flex justify-between mb-6 items-center max-md:flex-col max-md:items-start">
-        <h2 className='text-lg font-black'>PRODUCTS: </h2>
-        <div className="controls flex max-md:flex-col gap-2">
-          <button onClick={goToOrders} className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-yellow-600">
-            Orders
-          </button>
-          <button onClick={refetch} className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
-            Batch Import
-          </button>
-          <button className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
-            Upload New Stock
-          </button>
-          <button className="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600">
-            Manually Sync Stock
-          </button>
-          <button onClick={addProduct} className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
-            Add Product
-          </button>
+      <div className="flex justify-between mb-6 items-center">
+        <h2 className='text-lg font-black'>ORDERS: </h2>
+        <div className="controls flex gap-2">
+        <button onClick={goToProducts} className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-yellow-600">
+            Products
+            </button>
+            <button onClick={refetch} className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+            Resync
+            </button>
         </div>
       </div>
 
@@ -326,4 +317,4 @@ const ProductList = () => {
   );
 };
 
-export default ProductList;
+export default OrdersList;
