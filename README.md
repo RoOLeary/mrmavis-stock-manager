@@ -1,5 +1,5 @@
 # Orders Management App
-### Technical Assignment for (MR.MARVIS)[https://www.mrmarvis.com/nl]
+### Technical Assignment for (https://www.mrmarvis.com/nl)[Mr.Marvis]
 
 This project is a front-end application designed to manage product orders. Users can view, filter, and update orders, including modifying their status and handling inventory stock. The application features a clean and responsive interface, and integrates with mock APIs to simulate real-world scenarios such as updating product quantities and calculating total revenue based on order statuses.
 
