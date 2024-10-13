@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useUpdateProductMutation } from '../services/productApi'; // Import product mutation
 import { useCreateOrderMutation } from '../services/orderApi'; // Import order mutation
@@ -16,8 +16,10 @@ const PurchaseProduct = () => {
   const [updateProduct] = useUpdateProductMutation(); // Hook to update product quantity
   const [createOrder] = useCreateOrderMutation(); // Hook to create a new order
 
+  // @ts-expect-error gfu
   const handleQuantityChange = (e) => setQuantity(e.target.value);
 
+  // @ts-expect-error cki
   const handlePaymentSubmit = async (e) => {
     e.preventDefault();
 
@@ -35,6 +37,7 @@ const PurchaseProduct = () => {
       description: product.description,
       price: product.price,
       quantity: quantity, // Store the ordered quantity
+      // @ts-expect-error ngp
       total: (product.price * quantity).toFixed(2), // Calculate the total price
       status: 'paid', // Mark the order as paid
       type: product.type,

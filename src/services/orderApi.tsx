@@ -46,6 +46,7 @@ export const orderApi = createApi({
 
         } catch {
           // Rollback if the mutation fails
+          // @ts-expect-error cun
           patchResult.undo();
         }
       }

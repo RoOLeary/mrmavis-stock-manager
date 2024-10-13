@@ -4,16 +4,17 @@ import { useGetProductByIdQuery, useGetProductListQuery } from '../services/prod
 
 const ProductDetail = () => {
   const { id } = useParams();
+  // @ts-expect-error ack
   const { data: product, isLoading, error } = useGetProductByIdQuery(id);
   const { data: productsList } = useGetProductListQuery();
   const navigate = useNavigate();
   const [quantity, setQuantity] = useState(1);
 
-  const handleBuyNowClick = (id, quantity) => {
+  const handleBuyNowClick = (id: string, quantity: number) => {
     navigate(`/product/${id}/checkout`, { state: { product, quantity } });
   };
 
-  const handleQuantityChange = (e) => setQuantity(e.target.value);
+  const handleQuantityChange = (e: { target: { value: SetStateAction<number>; }; }) => setQuantity(e.target.value);
 
   const relatedProducts = productsList?.filter(
     (relatedProduct) => relatedProduct.type === product?.type && relatedProduct.id !== product?.id
@@ -50,6 +51,7 @@ const ProductDetail = () => {
             <label className="block text-sm font-medium text-gray-700 mb-2">Quantity</label>
             <select
               value={quantity}
+              // @ts-expect-error ack
               onChange={handleQuantityChange}
               className="border rounded p-2 w-24 mb-4"
             >

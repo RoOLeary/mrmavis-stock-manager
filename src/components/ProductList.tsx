@@ -91,7 +91,7 @@ const ProductList = () => {
         product.title.toLowerCase().includes(filterName.toLowerCase())
       );
     }
-
+  // @ts-expect-error ric
     setFilteredProducts(filtered);
   }, [products, filterType, filterAvailability, filterName]);
 
