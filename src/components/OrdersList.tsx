@@ -1,48 +1,50 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useState, useEffect } from 'react';
-import AddProduct from './AddProduct';
+
 import {
-  useGetProductListQuery,
-  useToggleProductAvailabilityMutation,
-  useUpdateProductMutation,
-  useDeleteProductMutation
-} from '../services/productApi';
+  useGetOrdersListQuery,
+  useUpdateOrderMutation,
+  useDeleteOrderMutation,
+} from '../services/orderApi';
+
+import { useUpdateProductMutation } from '../services/productApi'; // Import product mutation
 import { useNavigate } from 'react-router-dom';
 
 const OrdersList = () => {
-  const { data: products, isLoading, error, refetch } = useGetProductListQuery(); // Fetch tasks
-  const [toggleProductAvailability] = useToggleProductAvailabilityMutation(); // Hook to toggle product availability
-  const [deleteProduct] = useDeleteProductMutation();
-  const [updateProduct] = useUpdateProductMutation();
+  const { data: orders, isLoading, error, refetch } = useGetOrdersListQuery(); // Fetch orders
+  const [deleteOrder] = useDeleteOrderMutation();
+  const [updateOrder] = useUpdateOrderMutation();
+  const [updateProduct] = useUpdateProductMutation(); // Product update hook
 
-  const [editProductId, setEditProductId] = useState(null); // Track which product is being edited
-  const [editedProduct, setEditedProduct] = useState({}); // Track the values in the form
+  const [editOrderId, setEditOrderId] = useState(null); // Track which order is being edited
+  const [editedOrder, setEditedOrder] = useState({}); // Track the values in the form
 
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
-  const productsPerPage = 8; // Display 8 products per page
+  const ordersPerPage = 8; // Display 8 orders per page
 
   // Filters
-  const [filteredProducts, setFilteredProducts] = useState([]);
-  const [filterType, setFilterType] = useState('');
-  const [filterAvailability, setFilterAvailability] = useState('');
-  const [filterName, setFilterName] = useState('');
+  const [filteredOrders, setFilteredOrders] = useState([]);
+  const [filterType, setFilterType] = useState(''); // Filter by Type
+  const [filterStatus, setFilterStatus] = useState(''); // Filter by Status
+
+  const [totalRevenue, setTotalRevenue] = useState(0); // Track total revenue
 
   const navigate = useNavigate(); // Initialize the useNavigate hook
 
-  // Handle field changes
-  const handleInputChange = (e: { target: { name: never; value: never; }; }) => {
-    const { name, value } = e.target;
-    setEditedProduct((prev) => ({ ...prev, [name]: value }));
+  // Handle status field changes
+  const handleStatusChange = (e) => {
+    const { value } = e.target;
+    setEditedOrder((prev) => ({
+      ...prev,
+      status: value,
+    }));
   };
 
   // Enable edit mode
-  const handleEditClick = (product: React.SetStateAction<{}>) => {
-    setEditProductId(product.id);
-    setEditedProduct(product); // Initialize the form with the current product's values
-  };
-
-  const addProduct = () => {
-    navigate('/product/add-product');
+  const handleEditClick = (order) => {
+    setEditOrderId(order.id);
+    setEditedOrder(order); // Initialize the form with the current order's values
   };
 
   const goToProducts = () => {
@@ -50,58 +52,62 @@ const OrdersList = () => {
   };
 
   // Save the changes
-  const handleSave = () => {
-    updateProduct({
-      id: editedProduct?.id,           // ID of the product being updated
-      updates: {                      // Only pass the fields you want to update
-        title: editedProduct?.title,
-        description: editedProduct?.description,
-        price: editedProduct?.price,
-        quantity: editedProduct?.quantity,
-        type: editedProduct?.type,
-        isAvailable: editedProduct?.quantity > 0 // Only set isAvailable to true if quantity is greater than 0
-      }
-    });
-    setEditProductId(null);  // Exit edit mode after saving
-  };
+  const handleSave = async () => {
+    const prevOrder = orders.find((order) => order.id === editOrderId); // Get the previous order before editing
 
-  // Stock Status Logic (displayed based on quantity)
-  const getStockStatus = (product: never) => {
-    if (product.quantity === 0) return 'Out of Stock'; // Override if quantity is 0
-    if (product.quantity > 0 && product.quantity <= 10) return 'Low Stock';
-    return product.isAvailable ? 'Available' : 'Unavailable'; // Use isAvailable when quantity > 0
+    // Update the order status
+    await updateOrder({
+      id: editOrderId,
+      updates: {
+        status: editedOrder.status,
+      },
+    });
+
+    // If the order is cancelled, update the product stock and total revenue
+    if (editedOrder.status === 'cancelled') {
+      // Update product stock
+      await updateProduct({
+        id: prevOrder.product.id, // Assuming `product` field exists in the order object
+        updates: {
+          quantity: prevOrder.product.quantity + prevOrder.quantity, // Add back the ordered quantity to stock
+        },
+      }).catch((error) => {
+        console.error('Error updating product stock:', error);
+      });
+
+      // Update total revenue by subtracting the cancelled order's total
+      setTotalRevenue((prevTotal) => prevTotal - prevOrder.total);
+    }
+
+    setEditOrderId(null); // Exit edit mode after saving
   };
 
   // Handle Filters
   useEffect(() => {
-    let filtered = products || [];
+    let filtered = orders || [];
 
     if (filterType) {
-      filtered = filtered.filter(product => product.type === filterType);
-    }
-    if (filterAvailability) {
-      filtered = filtered.filter(product =>
-        filterAvailability === 'available'
-          ? product.isAvailable
-          : !product.isAvailable
-      );
-    }
-    if (filterName) {
-      filtered = filtered.filter(product =>
-        product.title.toLowerCase().includes(filterName.toLowerCase())
-      );
+      filtered = filtered.filter((order) => order.type === filterType);
     }
 
-    setFilteredProducts(filtered);
-  }, [products, filterType, filterAvailability, filterName]);
+    if (filterStatus) {
+      filtered = filtered.filter((order) => order.status === filterStatus);
+    }
+
+    setFilteredOrders(filtered);
+
+    // Calculate total revenue
+    const total = filtered.reduce((sum, order) => sum + parseFloat(order.total || 0), 0);
+    setTotalRevenue(total);
+  }, [orders, filterType, filterStatus]);
 
   // Pagination Logic
-  const indexOfLastProduct = currentPage * productsPerPage;
-  const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
-  const currentProducts = filteredProducts?.slice(indexOfFirstProduct, indexOfLastProduct);
+  const indexOfLastOrder = currentPage * ordersPerPage;
+  const indexOfFirstOrder = indexOfLastOrder - ordersPerPage;
+  const currentOrders = filteredOrders?.slice(indexOfFirstOrder, indexOfLastOrder);
 
   const handleNextPage = () => {
-    if (currentPage < Math.ceil(filteredProducts.length / productsPerPage)) {
+    if (currentPage < Math.ceil(filteredOrders.length / ordersPerPage)) {
       setCurrentPage(currentPage + 1);
     }
   };
@@ -112,12 +118,11 @@ const OrdersList = () => {
     }
   };
 
-  if (isLoading) return <p>Loading products...</p>;
-  if (error) return <p>Error loading products...</p>;
+  if (isLoading) return <p>Loading orders...</p>;
+  if (error) return <p>Error loading orders...</p>;
 
   return (
     <div className="container mx-auto px-4 py-6">
-      
       {/* Filter Section */}
       <div className="grid grid-cols-3 gap-4 mb-6">
         {/* Filter by Type */}
@@ -131,41 +136,39 @@ const OrdersList = () => {
           <option value="trousers">Trousers</option>
         </select>
 
-        {/* Filter by Availability */}
+        {/* Filter by Status */}
         <select
-          value={filterAvailability}
-          onChange={(e) => setFilterAvailability(e.target.value)}
+          value={filterStatus}
+          onChange={(e) => setFilterStatus(e.target.value)}
           className="border p-2 rounded w-full focus:ring-blue-500 focus:border-blue-500"
         >
-          <option value="">Filter by Availability</option>
-          <option value="available">Available</option>
-          <option value="out-of-stock">Out of Stock</option>
+          <option value="">Filter by Status</option>
+          <option value="paid">Paid</option>
+          <option value="pending">Pending</option>
+          <option value="cancelled">Cancelled</option>
         </select>
-
-        {/* Filter by Name */}
-        <input
-          type="text"
-          value={filterName}
-          onChange={(e) => setFilterName(e.target.value)}
-          placeholder="Filter by Name"
-          className="border p-2 rounded w-full focus:ring-blue-500 focus:border-blue-500"
-        />
       </div>
 
       {/* Control Buttons */}
       <div className="flex justify-between mb-6 items-center">
-        <h2 className='text-lg font-black'>ORDERS: </h2>
+        <h2 className="text-lg font-black">ORDERS:</h2>
         <div className="controls flex gap-2">
-        <button onClick={goToProducts} className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-yellow-600">
+          <button
+            onClick={goToProducts}
+            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-yellow-600"
+          >
             Products
-            </button>
-            <button onClick={refetch} className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+          </button>
+          <button
+            onClick={refetch}
+            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+          >
             Resync
-            </button>
+          </button>
         </div>
       </div>
 
-      {/* Product List Table */}
+      {/* Orders List Table */}
       <div className="overflow-x-auto">
         <table className="min-w-full bg-white border table-auto">
           <thead>
@@ -174,74 +177,37 @@ const OrdersList = () => {
               <th className="py-2 px-4 bg-gray-100 border">Description</th>
               <th className="py-2 px-4 bg-gray-100 border">Type</th>
               <th className="py-2 px-4 bg-gray-100 border">Price (€)</th>
-              <th className="py-2 px-4 bg-gray-100 border">Stock Units</th>
-              <th className="py-2 px-4 bg-gray-100 border">Availability</th>
+              <th className="py-2 px-4 bg-gray-100 border">Quantity</th>
+              <th className="py-2 px-4 bg-gray-100 border">Total</th>
+              <th className="py-2 px-4 bg-gray-100 border">Status</th>
               <th className="py-2 px-4 bg-gray-100 border">Actions</th>
             </tr>
           </thead>
           <tbody>
-            {currentProducts?.map((product) => (
-              <tr key={product.id} className="border-b hover:bg-gray-50">
-                {editProductId === product.id ? (
+            {currentOrders?.map((order) => (
+              <tr key={order.id} className="border-b hover:bg-gray-50">
+                {editOrderId === order.id ? (
                   <>
-                    {/* Edit Mode */}
-                    <td className="py-2 px-4 border">
-                      <input
-                        type="text"
-                        name="title"
-                        value={editedProduct.title || ''}
-                        onChange={handleInputChange}
-                        className="w-full p-2 border rounded"
-                      />
-                    </td>
-                    <td className="py-2 px-4 border">
-                      <input
-                        type="text"
-                        name="description"
-                        value={editedProduct.description || ''}
-                        onChange={handleInputChange}
-                        className="w-full p-2 border rounded"
-                      />
-                    </td>
+                    {/* Edit Mode: Only Status is Editable */}
+                    <td className="py-2 px-4 border">{order.title}</td>
+                    <td className="py-2 px-4 border">{order.description}</td>
+                    <td className="py-2 px-4 border">{order.type}</td>
+                    <td className="py-2 px-4 border">€{order.price}</td>
+                    <td className="py-2 px-4 border">{order.quantity}</td>
+                    <td className="py-2 px-4 border">€{order.total}</td>
                     <td className="py-2 px-4 border">
                       <select
-                        name="type"
-                        value={editedProduct.type || ''}
-                        onChange={handleInputChange}
+                        name="status"
+                        value={editedOrder.status}
+                        onChange={handleStatusChange}
                         className="w-full p-2 border rounded"
                       >
-                        <option value="t-shirt">T-shirt</option>
-                        <option value="trousers">Trousers</option>
+                        <option value="paid">Paid</option>
+                        <option value="pending">Pending</option>
+                        <option value="cancelled">Cancelled</option>
                       </select>
                     </td>
-                    <td className="py-2 px-4 border">
-                      <input
-                        type="number"
-                        name="price"
-                        value={editedProduct.price || ''}
-                        onChange={handleInputChange}
-                        className="w-full p-2 border rounded"
-                      />
-                    </td>
-                    <td className="py-2 px-4 border">
-                      <input
-                        type="number"
-                        name="quantity"
-                        value={editedProduct.quantity || ''}
-                        onChange={handleInputChange}
-                        className="w-full p-2 border rounded"
-                      />
-                    </td>
-                    <td className="py-2 px-4 border text-gray-600">
-                      {getStockStatus(editedProduct)}
-                    </td>
                     <td className="py-2 px-4 border flex space-x-2">
-                      <button
-                        onClick={() => toggleProductAvailability({ id: editedProduct.id, isAvailable: editedProduct.quantity > 0 })}
-                        className={`p-2 rounded ${editedProduct.quantity > 0 ? 'bg-yellow-500 hover:bg-yellow-600' : 'bg-red-500 hover:bg-red-600'} text-white`}
-                      >
-                        {editedProduct.quantity > 0 ? 'Mark as OOS' : 'Mark as Available'}
-                      </button>
                       <button
                         onClick={handleSave}
                         className="p-2 rounded bg-green-500 hover:bg-green-600 text-white"
@@ -249,7 +215,7 @@ const OrdersList = () => {
                         Save
                       </button>
                       <button
-                        onClick={() => setEditProductId(null)}
+                        onClick={() => setEditOrderId(null)}
                         className="p-2 rounded bg-gray-500 hover:bg-gray-600 text-white"
                       >
                         Cancel
@@ -259,29 +225,22 @@ const OrdersList = () => {
                 ) : (
                   <>
                     {/* Display Mode */}
-                    <td className="py-2 px-4 border text-gray-800">{product.title}</td>
-                    <td className="py-2 px-4 border text-gray-600">{product.description}</td>
-                    <td className="py-2 px-4 border text-gray-600">{product.type}</td>
-                    <td className="py-2 px-4 border text-gray-600">€{product.price}</td>
-                    <td className="py-2 px-4 border text-gray-600">{product.quantity}</td>
-                    <td className="py-2 px-4 border text-gray-600">
-                      {getStockStatus(product)}
-                    </td>
+                    <td className="py-2 px-4 border text-gray-800">{order.title}</td>
+                    <td className="py-2 px-4 border text-gray-600">{order.description}</td>
+                    <td className="py-2 px-4 border text-gray-600">{order.type}</td>
+                    <td className="py-2 px-4 border text-gray-600">€{order.price}</td>
+                    <td className="py-2 px-4 border text-gray-600">{order.quantity}</td>
+                    <td className="py-2 px-4 border text-gray-600">€{order.total}</td>
+                    <td className="py-2 px-4 border text-gray-600">{order.status}</td>
                     <td className="py-2 px-4 border flex space-x-2">
                       <button
-                        onClick={() => handleEditClick(product)}
+                        onClick={() => handleEditClick(order)}
                         className="p-2 rounded bg-blue-500 hover:bg-blue-600 text-white"
                       >
                         Edit
                       </button>
                       <button
-                        onClick={() => toggleProductAvailability({ id: product.id, isAvailable: !product.isAvailable })}
-                        className={`p-2 rounded ${product.isAvailable ? 'bg-yellow-500 hover:bg-yellow-600' : 'bg-green-500 hover:bg-green-600'} text-white`}
-                      >
-                        {product.quantity === 0 ? 'Out of Stock' : product.isAvailable ? 'Disable' : 'Enable'}
-                      </button>
-                      <button
-                        onClick={() => deleteProduct(product.id)}
+                        onClick={() => deleteOrder(order.id)}
                         className="p-2 rounded bg-red-500 hover:bg-red-600 text-white"
                       >
                         Delete
@@ -293,6 +252,11 @@ const OrdersList = () => {
             ))}
           </tbody>
         </table>
+      </div>
+
+      {/* Total Revenue Display */}
+      <div className="mt-6 text-right">
+        <h3 className="text-xl font-bold">Total Revenue: €{totalRevenue.toFixed(2)}</h3>
       </div>
 
       {/* Pagination */}
@@ -308,7 +272,7 @@ const OrdersList = () => {
         <button
           onClick={handleNextPage}
           className="px-4 py-2 bg-gray-300 text-gray-700 rounded ml-2 hover:bg-gray-400"
-          disabled={currentPage === Math.ceil(filteredProducts.length / productsPerPage)}
+          disabled={currentPage === Math.ceil(filteredOrders.length / ordersPerPage)}
         >
           Next
         </button>

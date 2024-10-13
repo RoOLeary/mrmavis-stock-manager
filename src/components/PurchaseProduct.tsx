@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useUpdateProductMutation } from '../services/productApi'; // Import product mutation
+import { useCreateOrderMutation } from '../services/orderApi'; // Import order mutation
 
 const PurchaseProduct = () => {
   const { state } = useLocation(); // Get product and quantity from the passed state
@@ -11,12 +13,35 @@ const PurchaseProduct = () => {
   const [expiryDate, setExpiryDate] = useState('');
   const [cvv, setCvv] = useState('');
 
+  const [updateProduct] = useUpdateProductMutation(); // Hook to update product quantity
+  const [createOrder] = useCreateOrderMutation(); // Hook to create a new order
+
   const handleQuantityChange = (e) => setQuantity(e.target.value);
 
-  const handlePaymentSubmit = (e) => {
+  const handlePaymentSubmit = async (e) => {
     e.preventDefault();
-    console.log('Payment submitted:', { cardNumber, expiryDate, cvv });
-    // Navigate to payment success page
+
+    // 1. Update the product stock by reducing the quantity
+    await updateProduct({
+      id: product.id,
+      updates: {
+        quantity: product.quantity - quantity // Reduce product quantity
+      }
+    });
+
+    // 2. Create a new order with the submitted information
+    await createOrder({
+      title: product.title,
+      description: product.description,
+      price: product.price,
+      quantity: quantity, // Store the ordered quantity
+      total: (product.price * quantity).toFixed(2), // Calculate the total price
+      status: 'paid', // Mark the order as paid
+      type: product.type,
+      orderId: Math.floor(Math.random() * 1000) // Dummy order ID
+    });
+
+    // 3. Navigate to the payment success page
     navigate('/product/payment-successful');
   };
 

@@ -138,7 +138,8 @@ const ProductList = () => {
           className="border p-2 rounded w-full focus:ring-blue-500 focus:border-blue-500"
         >
           <option value="">Filter by Availability</option>
-          <option value="available">Available</option>
+          <option value="available">In Stock</option>
+          <option value="low-stock">Low Stock</option>
           <option value="out-of-stock">Out of Stock</option>
         </select>
 
@@ -164,9 +165,6 @@ const ProductList = () => {
           </button>
           <button className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
             Upload New Stock
-          </button>
-          <button className="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600">
-            Manually Sync Stock
           </button>
           <button onClick={addProduct} className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
             Add Product
@@ -287,7 +285,7 @@ const ProductList = () => {
                         onClick={() => toggleProductAvailability({ id: product.id, isAvailable: !product.isAvailable })}
                         className={`p-2 rounded ${product.isAvailable ? 'bg-yellow-500 hover:bg-yellow-600' : 'bg-green-500 hover:bg-green-600'} text-white`}
                       >
-                        {product.quantity === 0 ? 'Out of Stock' : product.isAvailable ? 'Disable' : 'Enable'}
+                        {product.quantity === 0 ? 'Re-Stock' : product.isAvailable ? 'Disable' : 'Enable'}
                       </button>
                       <button
                         onClick={() => deleteProduct(product.id)}
