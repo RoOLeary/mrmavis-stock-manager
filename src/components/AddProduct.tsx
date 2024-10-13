@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { useCreateProductMutation } from '../services/productApi';
+import { useNavigate } from 'react-router-dom'; // Import the useNavigate hook
 
 const AddProduct = () => {
   const [addProduct] = useCreateProductMutation(); // Hook to add a new product
+  const navigate = useNavigate(); // Initialize the navigate hook
   const [productTitle, setProductTitle] = useState(''); // Local state for product title
   const [productDescription, setProductDescription] = useState(''); // Local state for product description
   const [productPrice, setProductPrice] = useState(''); // Local state for product price
@@ -16,7 +18,7 @@ const AddProduct = () => {
         title: productTitle,
         description: productDescription, // Product description
         price: productPrice,
-        isAvailable: (productQuantity > 0 ? true : false),
+        isAvailable: productQuantity > 0, // Check availability based on quantity
         quantity: productQuantity, // Product quantity
         type: productType, // Product type
       });
@@ -26,6 +28,9 @@ const AddProduct = () => {
       setProductPrice('');
       setProductQuantity('');
       setProductType('');
+
+      // Redirect to the /orders page after product creation
+      navigate('/orders');
     }
   };
 

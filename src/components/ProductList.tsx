@@ -6,6 +6,7 @@ import {
   useUpdateProductMutation,
   useDeleteProductMutation
 } from '../services/productApi';
+import { useNavigate } from 'react-router-dom';
 
 const ProductList = () => {
   const { data: products, isLoading, error, refetch } = useGetProductListQuery(); // Fetch tasks
@@ -16,11 +17,17 @@ const ProductList = () => {
   const [editProductId, setEditProductId] = useState(null); // Track which product is being edited
   const [editedProduct, setEditedProduct] = useState({}); // Track the values in the form
 
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const productsPerPage = 8; // Display 8 products per page
+
   // Filters
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [filterType, setFilterType] = useState('');
   const [filterAvailability, setFilterAvailability] = useState('');
   const [filterName, setFilterName] = useState('');
+
+  const navigate = useNavigate(); // Initialize the useNavigate hook
 
   // Handle field changes
   const handleInputChange = (e) => {
@@ -32,6 +39,10 @@ const ProductList = () => {
   const handleEditClick = (product) => {
     setEditProductId(product.id);
     setEditedProduct(product); // Initialize the form with the current product's values
+  };
+
+  const addProduct = () => {
+    navigate('/product/add-product');
   };
 
   // Save the changes
@@ -60,7 +71,7 @@ const ProductList = () => {
   // Handle Filters
   useEffect(() => {
     let filtered = products || [];
-    
+
     if (filterType) {
       filtered = filtered.filter(product => product.type === filterType);
     }
@@ -80,8 +91,22 @@ const ProductList = () => {
     setFilteredProducts(filtered);
   }, [products, filterType, filterAvailability, filterName]);
 
-  // Sort products by createdAt (descending) to ensure newly created products are at the start
-  const sortedProducts = filteredProducts?.slice().sort((a, b) => b.createdAt - a.createdAt);
+  // Pagination Logic
+  const indexOfLastProduct = currentPage * productsPerPage;
+  const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
+  const currentProducts = filteredProducts?.slice(indexOfFirstProduct, indexOfLastProduct);
+
+  const handleNextPage = () => {
+    if (currentPage < Math.ceil(filteredProducts.length / productsPerPage)) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const handlePrevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
 
   if (isLoading) return <p>Loading products...</p>;
   if (error) return <p>Error loading products...</p>;
@@ -134,6 +159,9 @@ const ProductList = () => {
         <button className="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600">
           Manually Sync Stock
         </button>
+        <button onClick={addProduct} className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+          Add Product
+        </button>
       </div>
 
       {/* Product List Table */}
@@ -151,7 +179,7 @@ const ProductList = () => {
             </tr>
           </thead>
           <tbody>
-            {sortedProducts?.map((product) => (
+            {currentProducts?.map((product) => (
               <tr key={product.id} className="border-b hover:bg-gray-50">
                 {editProductId === product.id ? (
                   <>
@@ -264,6 +292,25 @@ const ProductList = () => {
             ))}
           </tbody>
         </table>
+      </div>
+
+      {/* Pagination */}
+      <div className="flex justify-center mt-6">
+        <button
+          onClick={handlePrevPage}
+          className="px-4 py-2 bg-gray-300 text-gray-700 rounded mr-2 hover:bg-gray-400"
+          disabled={currentPage === 1}
+        >
+          Previous
+        </button>
+        <span className="px-4 py-2">Page {currentPage}</span>
+        <button
+          onClick={handleNextPage}
+          className="px-4 py-2 bg-gray-300 text-gray-700 rounded ml-2 hover:bg-gray-400"
+          disabled={currentPage === Math.ceil(filteredProducts.length / productsPerPage)}
+        >
+          Next
+        </button>
       </div>
     </div>
   );

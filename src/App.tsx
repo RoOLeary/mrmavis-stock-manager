@@ -6,8 +6,11 @@ import { HistoryRouter } from 'redux-first-history/rr6'
 
 import './App.css'
 import Home from './pages/Home';
+import AddProduct from './components/AddProduct'
 import ProductList from './components/ProductList'
 import ProductDetail from './components/ProductDetail'
+import PurchaseProduct from './components/PurchaseProduct'
+import ThankYou from './pages/ThankYou'
 
 function App() {
   
@@ -18,8 +21,10 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/orders" element={<ProductList />} />
           <Route path="/product/:id" element={<ProductDetail />} />
-          
-          
+          <Route path="/product/:id/checkout" element={<PurchaseProduct />} />  
+          <Route path="/product/add-product" element={<AddProduct />} />  
+          <Route path="/product/payment-successful" element={<ThankYou />} />  
+         
         </Routes>
       </HistoryRouter>
     </ReduxStoreProvider>
