@@ -189,6 +189,81 @@ const OrdersList = () => {
         </div>
       </div>
 
+            {/* Mobile Layout: Order Cards */}
+            <div className="block sm:hidden">
+        {currentOrders?.length ? (
+          currentOrders.map((order) => (
+            <div key={order.id} className="bg-white border p-4 mb-4 rounded shadow-md text-left">
+              <h3 className="font-bold text-lg">{order.title}</h3>
+              <p className="text-gray-600">{order.description}</p>
+              <p>
+                <strong>Order Number:</strong> #{order.orderId}
+              </p>
+              <p>
+                <strong>Type:</strong> {order.type}
+              </p>
+              <p>
+                <strong>Price:</strong> €{order.price}
+              </p>
+              <p>
+                <strong>Quantity:</strong> {order.quantity}
+              </p>
+              <p>
+                <strong>Total:</strong> €{order.total}
+              </p>
+              <p>
+                <strong>Status:</strong> {order.status}
+              </p>
+              {editOrderId === order.id ? (
+                <div className="mt-4">
+                  <select
+                    value={editedOrder.status}
+                    onChange={handleStatusChange}
+                    className="border p-2 rounded w-full"
+                  >
+                    <option value="paid">Paid</option>
+                    <option value="pending">Pending</option>
+                    <option value="cancelled">Cancelled</option>
+                  </select>
+                  <div className="mt-4 flex space-x-2">
+                    <button
+                      onClick={handleSave}
+                      className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded"
+                    >
+                      Save
+                    </button>
+                    <button
+                      onClick={() => setEditOrderId(null)}
+                      className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="mt-4 flex space-x-2">
+                  <button
+                    onClick={() => handleEditClick(order)}
+                    className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => deleteOrder(order.id)}
+                    className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded"
+                  >
+                    Delete
+                  </button>
+                </div>
+              )}
+            </div>
+          ))
+        ) : (
+          <p className="text-center">No orders available</p>
+        )}
+      </div>
+
+
       {/* Desktop Layout: Table */}
       <div className="hidden sm:block overflow-x-auto">
         <table className="min-w-full bg-white border table-auto">
