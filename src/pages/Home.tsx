@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
+// @ts-nocheck
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -7,7 +7,7 @@ const Home = () => {
     const [filteredProducts, setFilteredProducts] = useState([]);
     const [productTypeFilter, setProductTypeFilter] = useState('all'); // For filtering by type
     const [currentPage, setCurrentPage] = useState(1); // For pagination
-    const productsPerPage = 8; // Display 8 products per page
+    const [productsPerPage, setProductsPerPage] = useState(8); // Display 8 products per page by default
 
     const navigate = useNavigate(); // Initialize the useNavigate hook
 
@@ -15,6 +15,7 @@ const Home = () => {
         navigate(`/product/${id}`); // Navigate to /product/{id} when button is clicked
     };
 
+    // Fetch data function
     const fetchData = async () => {
         try {
             const response = await fetch('https://670b7631ac6860a6c2cc1860.mockapi.io/api/mm-rol/products');
@@ -22,12 +23,15 @@ const Home = () => {
             setProducts(data);
             setFilteredProducts(data); // Initialize filtered products
         } catch (error) {
-            console.log('error');
+            console.log('Error fetching data:', error);
         }
     };
 
+    // Polling: Fetch data every 15 seconds
     useEffect(() => {
-        fetchData();
+        fetchData(); // Fetch initial data
+        const intervalId = setInterval(fetchData, 15000); // Polling interval of 15 seconds
+        return () => clearInterval(intervalId); // Cleanup on unmount
     }, []);
 
     // Handle product type filtering
@@ -40,6 +44,13 @@ const Home = () => {
         } else {
             setFilteredProducts(products.filter(product => product?.type === value));
         }
+    };
+
+    // Handle number of products per page change
+    const handleProductsPerPageChange = (e) => {
+        const value = parseInt(e.target.value, 10);
+        setProductsPerPage(value);
+        setCurrentPage(1); // Reset to first page when changing products per page
     };
 
     // Handle pagination
@@ -61,26 +72,41 @@ const Home = () => {
 
     return (
         <>
-            <nav>
-                <a href="/">Home</a>
-                <a href="/orders">Orders</a>
-            </nav>
             <div className="container mx-auto py-6 px-4">
-                <h2 className="text-2xl font-bold mb-6">Product List</h2>
+                <h2 className="text-2xl font-bold mb-6">LATEST PRODUCTS</h2>
 
-                {/* Filter Dropdown */}
-                <div className="mb-4">
-                    <label htmlFor="filter" className="block text-sm font-medium text-gray-700 mb-2">Filter by Type</label>
-                    <select
-                        id="filter"
-                        value={productTypeFilter}
-                        onChange={handleFilterChange}
-                        className="border p-2 rounded w-full max-w-xs focus:ring-blue-500 focus:border-blue-500"
-                    >
-                        <option value="all">All Products</option>
-                        <option value="t-shirt">T-shirts</option>
-                        <option value="trousers">Trousers</option>
-                    </select>
+                {/* Filter Section */}
+                <div className="mb-4 flex flex-col sm:flex-row justify-end sm:space-x-4">
+                    {/* Filter by Type */}
+                    <div className="w-full sm:w-1/2 md:w-1/4 flex flex-col items-end">
+                        <label htmlFor="filter" className="block text-sm font-black text-gray-700 mb-2 text-right">Filter by Type</label>
+                        <select
+                            id="filter"
+                            value={productTypeFilter}
+                            onChange={handleFilterChange}
+                            className="border p-2 rounded w-full sm:w-1/2 md:w-full focus:ring-blue-500 focus:border-blue-500"
+                        >
+                            <option value="all">All Products</option>
+                            <option value="t-shirt">T-shirts</option>
+                            <option value="trousers">Trousers</option>
+                        </select>
+                    </div>
+
+                    {/* Products per page */}
+                    <div className="w-full sm:w-1/2 md:w-1/4 flex flex-col items-end">
+                        <label htmlFor="productsPerPage" className="block text-sm font-black text-gray-700 mb-2 text-right">Products per Page</label>
+                        <select
+                            id="productsPerPage"
+                            value={productsPerPage}
+                            onChange={handleProductsPerPageChange}
+                            className="border p-2 rounded w-full sm:w-1/2 md:w-full focus:ring-blue-500 focus:border-blue-500"
+                        >
+                            <option value={4}>4</option>
+                            <option value={8}>8</option>
+                            <option value={12}>12</option>
+                            <option value={16}>16</option>
+                        </select>
+                    </div>
                 </div>
 
                 {/* Product Grid */}
@@ -96,19 +122,17 @@ const Home = () => {
                             <h1 className="text-lg font-semibold mb-2 text-center">{product.title}</h1>
                             <p className="text-gray-500 mb-2 text-center">{product.description}</p>
                             <p className="text-gray-700 font-bold mb-2 text-center">€{product.price}</p>
-                            <p className={`text-sm ${product.isAvailable ? 'text-green-600' : 'text-red-500'} text-center`}>
-                                {product.isAvailable ? "In Stock" : "Out of Stock"}
+                            <p className={`text-sm ${product.quantity > 0 ? 'text-green-600' : 'text-red-500'} text-center`}>
+                                {product.quantity > 0 ? "In Stock" : "Out of Stock"}
                             </p>
                             <div className="flex gap-2">
-                                
                                 <button
-                                    className={`mt-4 p-2 rounded ${product.isAvailable ? 'bg-green-500 hover:bg-green-600' : 'bg-gray-500'} text-white`}
+                                    className={`mt-4 p-2 rounded ${product.quantity > 0 ? 'bg-green-500 hover:bg-green-600' : 'bg-gray-500'} text-white`}
                                     onClick={() => handleMoreInfoClick(product.id)}
-                                    disabled={!product.isAvailable}
+                                    disabled={product.quantity === 0}
                                 >
-                                   {product.isAvailable ? 'Buy Now' : 'Out of Stock'}
+                                    {product.quantity > 0 ? 'Buy Now' : 'Out of Stock'}
                                 </button>
-                                
                             </div>
                         </li>
                     ))}

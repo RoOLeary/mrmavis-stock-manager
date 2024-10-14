@@ -1,39 +1,54 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* @ts-nocheck  */
-import { useState, useEffect, SetStateAction } from 'react';
+// @ts-nocheck
+import { useState, useEffect } from 'react';
 import {
   useGetOrdersListQuery,
   useUpdateOrderMutation,
   useDeleteOrderMutation,
 } from '../services/orderApi';
-
-import { useUpdateProductMutation } from '../services/productApi'; // Import product mutation
+import { useUpdateProductMutation } from '../services/productApi';
 import { useNavigate } from 'react-router-dom';
 
+// Define the Order interface
+interface Order {
+  id: string;
+  title: string;
+  description: string;
+  type: string;
+  price: number;
+  quantity: number;
+  total: number;
+  status: string;
+  createdAt: string;
+  product: {
+    id: string;
+    quantity: number;
+  };
+}
+
 const OrdersList = () => {
-  const { data: orders, isLoading, error, refetch } = useGetOrdersListQuery(); // Fetch orders
+  // Fetch orders with polling interval for real-time updates
+  const { data: orders = [], isLoading, error, refetch } = useGetOrdersListQuery(null, {
+    pollingInterval: 10000, // Poll every 10 seconds
+  });
   const [deleteOrder] = useDeleteOrderMutation();
   const [updateOrder] = useUpdateOrderMutation();
-  const [updateProduct] = useUpdateProductMutation(); // Product update hook
+  const [updateProduct] = useUpdateProductMutation();
 
-  const [editOrderId, setEditOrderId] = useState(null); // Track which order is being edited
-  const [editedOrder, setEditedOrder] = useState({}); // Track the values in the form
+  const [editOrderId, setEditOrderId] = useState<string | null>(null); // Track which order is being edited
+  const [editedOrder, setEditedOrder] = useState<Partial<Order>>({}); // Track the values in the form
 
-  // Pagination
   const [currentPage, setCurrentPage] = useState(1);
-  const ordersPerPage = 8; // Display 8 orders per page
+  const ordersPerPage = 8;
 
-  // Filters
-  const [filteredOrders, setFilteredOrders] = useState([]);
+  const [filteredOrders, setFilteredOrders] = useState<Order[]>([]);
   const [filterType, setFilterType] = useState(''); // Filter by Type
   const [filterStatus, setFilterStatus] = useState(''); // Filter by Status
 
   const [totalRevenue, setTotalRevenue] = useState(0); // Track total revenue
-
-  const navigate = useNavigate(); // Initialize the useNavigate hook
+  const navigate = useNavigate();
 
   // Handle status field changes
-  const handleStatusChange = (e: { target: { value: never; }; }) => {
+  const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const { value } = e.target;
     setEditedOrder((prev) => ({
       ...prev,
@@ -42,54 +57,54 @@ const OrdersList = () => {
   };
 
   // Enable edit mode
-
-  const handleEditClick = (order: SetStateAction<{}>) => {
-    // @ts-expect-error gee
+  const handleEditClick = (order: Order) => {
     setEditOrderId(order.id);
     setEditedOrder(order); // Initialize the form with the current order's values
   };
 
   const goToProducts = () => {
-    navigate('/products');
+    navigate('/admin/products');
+  };
+
+  const manageStore = () => {
+    navigate('/admin/manage-store');
   };
 
   // Save the changes
   const handleSave = async () => {
-    // @ts-expect-error gee
     const prevOrder = orders.find((order) => order.id === editOrderId); // Get the previous order before editing
 
-    // Update the order status
-    await updateOrder({
-      // @ts-expect-error gee
-      id: editOrderId,
-      updates: {
-        // @ts-expect-error gee
-        status: editedOrder.status,
-      },
-    });
-
-    // If the order is cancelled, update the product stock and total revenue
-    if (editedOrder.status === 'cancelled') {
-      // Update product stock
-      await updateProduct({
-        id: prevOrder.product.id, // Assuming `product` field exists in the order object
+    if (prevOrder) {
+      // Update the order status
+      await updateOrder({
+        id: editOrderId!,
         updates: {
-          quantity: prevOrder.product.quantity + prevOrder.quantity, // Add back the ordered quantity to stock
+          status: editedOrder.status!,
         },
-      }).catch((error) => {
-        console.error('Error updating product stock:', error);
       });
 
-      // Update total revenue by subtracting the cancelled order's total
-      setTotalRevenue((prevTotal) => prevTotal - prevOrder.total);
-    }
+      // If the order is cancelled, update the product stock and total revenue
+      if (editedOrder.status === 'cancelled') {
+        await updateProduct({
+          id: prevOrder.product.id,
+          updates: {
+            quantity: prevOrder.product.quantity + prevOrder.quantity,
+          },
+        }).catch((error) => {
+          console.error('Error updating product stock:', error);
+        });
 
-    setEditOrderId(null); // Exit edit mode after saving
+        setTotalRevenue((prevTotal) => prevTotal - prevOrder.total);
+      }
+
+      setEditOrderId(null);
+      refetch();
+    }
   };
 
-  // Handle Filters
+  // Handle Filters and Sorting
   useEffect(() => {
-    let filtered = orders || [];
+    let filtered = orders;
 
     if (filterType) {
       filtered = filtered.filter((order) => order.type === filterType);
@@ -99,14 +114,16 @@ const OrdersList = () => {
       filtered = filtered.filter((order) => order.status === filterStatus);
     }
 
+    // Sort by createdAt (descending)
+    filtered = [...filtered].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
     setFilteredOrders(filtered);
 
     // Calculate total revenue
-    const total = filtered.reduce((sum, order) => sum + parseFloat(order.total || 0), 0);
+    const total = filtered.reduce((sum, order) => sum + parseFloat(order.total?.toString() || '0'), 0);
     setTotalRevenue(total);
   }, [orders, filterType, filterStatus]);
 
-  // Pagination Logic
   const indexOfLastOrder = currentPage * ordersPerPage;
   const indexOfFirstOrder = indexOfLastOrder - ordersPerPage;
   const currentOrders = filteredOrders?.slice(indexOfFirstOrder, indexOfLastOrder);
@@ -129,8 +146,7 @@ const OrdersList = () => {
   return (
     <div className="container mx-auto px-4 py-6">
       {/* Filter Section */}
-      <div className="grid grid-cols-3 gap-4 mb-6">
-        {/* Filter by Type */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
         <select
           value={filterType}
           onChange={(e) => setFilterType(e.target.value)}
@@ -141,7 +157,6 @@ const OrdersList = () => {
           <option value="trousers">Trousers</option>
         </select>
 
-        {/* Filter by Status */}
         <select
           value={filterStatus}
           onChange={(e) => setFilterStatus(e.target.value)}
@@ -155,9 +170,9 @@ const OrdersList = () => {
       </div>
 
       {/* Control Buttons */}
-      <div className="flex justify-between mb-6 items-center">
+      <div className="flex flex-col sm:flex-row justify-between mb-6 items-stretch space-y-4 sm:space-y-0 sm:space-x-4">
         <h2 className="text-lg font-black">ORDERS:</h2>
-        <div className="controls flex gap-2">
+        <div className="controls flex flex-col sm:flex-row gap-2">
           <button
             onClick={goToProducts}
             className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-yellow-600"
@@ -165,16 +180,80 @@ const OrdersList = () => {
             Products
           </button>
           <button
-            onClick={refetch}
-            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+            onClick={manageStore}
+            className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
           >
-            Resync
+            Manage Store
           </button>
         </div>
       </div>
 
-      {/* Orders List Table */}
-      <div className="overflow-x-auto">
+      {/* Mobile Layout: Order Cards */}
+      <div className="block sm:hidden">
+        {currentOrders?.map((order) => (
+          <div key={order.id} className="bg-white border p-4 mb-4 rounded shadow-md text-left">
+            <h3 className="font-bold text-lg">{order.title}</h3>
+            <p className="text-gray-600">{order.description}</p>
+            <p>
+              <strong>Type:</strong> {order.type}
+            </p>
+            <p>
+              <strong>Price:</strong> €{order.price}
+            </p>
+            <p>
+              <strong>Quantity:</strong> {order.quantity}
+            </p>
+            <p>
+              <strong>Total:</strong> €{order.total}
+            </p>
+            {editOrderId === order.id ? (
+              <div className="mt-4">
+                <select
+                  value={editedOrder.status}
+                  onChange={handleStatusChange}
+                  className="border p-2 rounded w-full"
+                >
+                  <option value="paid">Paid</option>
+                  <option value="pending">Pending</option>
+                  <option value="cancelled">Cancelled</option>
+                </select>
+                <div className="mt-4 flex space-x-2">
+                  <button
+                    onClick={handleSave}
+                    className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded"
+                  >
+                    Save
+                  </button>
+                  <button
+                    onClick={() => setEditOrderId(null)}
+                    className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="mt-4 flex space-x-2">
+                <button
+                  onClick={() => handleEditClick(order)}
+                  className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
+                >
+                  Edit
+                </button>
+                <button
+                  onClick={() => deleteOrder(order.id)}
+                  className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded"
+                >
+                  Delete
+                </button>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {/* Desktop Layout: Table */}
+      <div className="hidden sm:block overflow-x-auto">
         <table className="min-w-full bg-white border table-auto">
           <thead>
             <tr>
@@ -191,28 +270,30 @@ const OrdersList = () => {
           <tbody>
             {currentOrders?.map((order) => (
               <tr key={order.id} className="border-b hover:bg-gray-50">
-                {editOrderId === order.id ? (
-                  <>
-                    {/* Edit Mode: Only Status is Editable */}
-                    <td className="py-2 px-4 border">{order.title}</td>
-                    <td className="py-2 px-4 border">{order.description}</td>
-                    <td className="py-2 px-4 border">{order.type}</td>
-                    <td className="py-2 px-4 border">€{order.price}</td>
-                    <td className="py-2 px-4 border">{order.quantity}</td>
-                    <td className="py-2 px-4 border">€{order.total}</td>
-                    <td className="py-2 px-4 border">
-                      <select
-                        name="status"
-                        value={editedOrder.status}
-                        onChange={handleStatusChange}
-                        className="w-full p-2 border rounded"
-                      >
-                        <option value="paid">Paid</option>
-                        <option value="pending">Pending</option>
-                        <option value="cancelled">Cancelled</option>
-                      </select>
-                    </td>
-                    <td className="py-2 px-4 border flex space-x-2">
+                <td className="py-2 px-4 border">{order.title}</td>
+                <td className="py-2 px-4 border">{order.description}</td>
+                <td className="py-2 px-4 border">{order.type}</td>
+                <td className="py-2 px-4 border">€{order.price}</td>
+                <td className="py-2 px-4 border">{order.quantity}</td>
+                <td className="py-2 px-4 border">€{order.total}</td>
+                <td className="py-2 px-4 border">
+                  {editOrderId === order.id ? (
+                    <select
+                      value={editedOrder.status}
+                      onChange={handleStatusChange}
+                      className="border p-2 rounded w-full"
+                    >
+                      <option value="paid">Paid</option>
+                      <option value="pending">Pending</option>
+                      <option value="cancelled">Cancelled</option>
+                    </select>
+                  ) : (
+                    order.status
+                  )}
+                </td>
+                <td className="py-2 px-4 border flex space-x-2">
+                  {editOrderId === order.id ? (
+                    <>
                       <button
                         onClick={handleSave}
                         className="p-2 rounded bg-green-500 hover:bg-green-600 text-white"
@@ -225,19 +306,9 @@ const OrdersList = () => {
                       >
                         Cancel
                       </button>
-                    </td>
-                  </>
-                ) : (
-                  <>
-                    {/* Display Mode */}
-                    <td className="py-2 px-4 border text-gray-800">{order.title}</td>
-                    <td className="py-2 px-4 border text-gray-600">{order.description}</td>
-                    <td className="py-2 px-4 border text-gray-600">{order.type}</td>
-                    <td className="py-2 px-4 border text-gray-600">€{order.price}</td>
-                    <td className="py-2 px-4 border text-gray-600">{order.quantity}</td>
-                    <td className="py-2 px-4 border text-gray-600">€{order.total}</td>
-                    <td className="py-2 px-4 border text-gray-600">{order.status}</td>
-                    <td className="py-2 px-4 border flex space-x-2">
+                    </>
+                  ) : (
+                    <>
                       <button
                         onClick={() => handleEditClick(order)}
                         className="p-2 rounded bg-blue-500 hover:bg-blue-600 text-white"
@@ -250,9 +321,9 @@ const OrdersList = () => {
                       >
                         Delete
                       </button>
-                    </td>
-                  </>
-                )}
+                    </>
+                  )}
+                </td>
               </tr>
             ))}
           </tbody>

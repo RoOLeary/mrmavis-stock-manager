@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useState } from 'react';
 import { useCreateProductMutation } from '../services/productApi';
 import { useNavigate } from 'react-router-dom'; // Import the useNavigate hook

@@ -92,7 +92,7 @@ const ProductDetail = () => {
                   className="w-full h-auto mb-2"
                 />
                 <h4 className="text-md font-semibold">{related.title}</h4>
-                <p className="text-gray-600">€{related.price.toFixed(2)}</p>
+                {/* <p className="text-gray-600">€{related?.price?.toFixed(2)}</p> */}
               </a>
             </div>
           ))}

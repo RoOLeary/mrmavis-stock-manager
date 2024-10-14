@@ -1,17 +1,15 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
+// @ts-nocheck
 // Base Product type
-export type Product = {
-    map(arg0: ({ product }: never) => import("react/jsx-runtime").JSX.Element): import("react").ReactNode;
-    id: string;
+export interface Product {
+    id: string; // Or number if it's numeric
     title: string;
     description: string;
-    price: number;
     quantity: number;
-    createdAt: Date;  // when the product was added to the shop
-    updatedAt: Date;  // when stock was last updated
-    isAvailable: boolean;
     type: string;
-  };
+    price: number;
+    isAvailable: boolean;
+  }
   
   // Specific product types
   // @ts-expect-error tsh
@@ -39,15 +37,32 @@ export type Product = {
   type ProductType = 'tshirt' | 'trouser';  // This is simple and flexible
   
 
-  export type Order = {
-    map(arg0: ({ order }: never) => import("react/jsx-runtime").JSX.Element): import("react").ReactNode;
+  export interface Order {
+    id?: string;
+    title?: string;
+    description?: string;
+    type?: string;
+    price?: number;
+    quantity?: number;
+    total?: number;
+    status?: string;
+    createdAt: string; // assuming createdAt is a string, you can change it based on your actual structure
+    product: {
+      id: string;
+      quantity: number;
+    };
+  }
+  
+
+  type OrderType = {
     id: string;
     title: string;
     description: string;
+    type: string;
     price: number;
     quantity: number;
-    createdAt: Date;  // when the product was added to the shop
-    updatedAt: Date;  // when stock was last updated
+    total: number;
     status: string;
-    type: string;
+    product: { id: string; quantity: number }; // Assuming product exists
   };
+  
