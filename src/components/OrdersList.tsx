@@ -11,6 +11,7 @@ import { useNavigate } from 'react-router-dom';
 // Define the Order interface
 interface Order {
   id: string;
+  orderId: string;  // Ensure orderId is part of the Order interface
   title: string;
   description: string;
   type: string;
@@ -188,75 +189,12 @@ const OrdersList = () => {
         </div>
       </div>
 
-      {/* Mobile Layout: Order Cards */}
-      <div className="block sm:hidden">
-        {currentOrders?.map((order) => (
-          <div key={order.id} className="bg-white border p-4 mb-4 rounded shadow-md text-left">
-            <h3 className="font-bold text-lg">{order.title}</h3>
-            <p className="text-gray-600">{order.description}</p>
-            <p>
-              <strong>Type:</strong> {order.type}
-            </p>
-            <p>
-              <strong>Price:</strong> €{order.price}
-            </p>
-            <p>
-              <strong>Quantity:</strong> {order.quantity}
-            </p>
-            <p>
-              <strong>Total:</strong> €{order.total}
-            </p>
-            {editOrderId === order.id ? (
-              <div className="mt-4">
-                <select
-                  value={editedOrder.status}
-                  onChange={handleStatusChange}
-                  className="border p-2 rounded w-full"
-                >
-                  <option value="paid">Paid</option>
-                  <option value="pending">Pending</option>
-                  <option value="cancelled">Cancelled</option>
-                </select>
-                <div className="mt-4 flex space-x-2">
-                  <button
-                    onClick={handleSave}
-                    className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded"
-                  >
-                    Save
-                  </button>
-                  <button
-                    onClick={() => setEditOrderId(null)}
-                    className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <div className="mt-4 flex space-x-2">
-                <button
-                  onClick={() => handleEditClick(order)}
-                  className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
-                >
-                  Edit
-                </button>
-                <button
-                  onClick={() => deleteOrder(order.id)}
-                  className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded"
-                >
-                  Delete
-                </button>
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
-
       {/* Desktop Layout: Table */}
       <div className="hidden sm:block overflow-x-auto">
         <table className="min-w-full bg-white border table-auto">
           <thead>
             <tr>
+              <th className="py-2 px-4 bg-gray-100 border">Order Number</th> {/* Added order number */}
               <th className="py-2 px-4 bg-gray-100 border">Title</th>
               <th className="py-2 px-4 bg-gray-100 border">Description</th>
               <th className="py-2 px-4 bg-gray-100 border">Type</th>
@@ -270,6 +208,7 @@ const OrdersList = () => {
           <tbody>
             {currentOrders?.map((order) => (
               <tr key={order.id} className="border-b hover:bg-gray-50">
+                <td className="py-2 px-4 border"><a href={`/admin/orders/${order.orderId}`}>#{order.orderId}</a></td> {/* Displaying order number */}
                 <td className="py-2 px-4 border">{order.title}</td>
                 <td className="py-2 px-4 border">{order.description}</td>
                 <td className="py-2 px-4 border">{order.type}</td>

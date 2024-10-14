@@ -1,15 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 
-const ThankYou = () => {
-  const [orderNumber, setOrderNumber] = useState('');
+// @ts-expect-error
+const ThankYou = ({ orderNum }:string) => {
 
-  // Generate a random order number when the component mounts
-  useEffect(() => {
-    const randomOrderNumber = Math.floor(Math.random() * 1000000); // Generate random order number
-    // @ts-ignore
-    setOrderNumber(randomOrderNumber);
-  }, []);
-
+    const location = useLocation();
+    const { orderId } = location.state || {}; // Get the orderId from state
+  
   return (
     <div className="container mx-auto py-8">
       <div className="bg-white shadow-md rounded-lg p-6 max-w-lg mx-auto text-center">
@@ -18,7 +14,7 @@ const ThankYou = () => {
           Your order has been placed successfully.
         </p>
         <p className="text-xl font-semibold text-green-600 mb-4">
-          Order Number: #{orderNumber}
+        {orderId && <p>Your Order ID is: {orderId}</p>}
         </p>
         <p className="text-lg text-gray-600 mb-6">
           We will notify you when your order is on the way.
