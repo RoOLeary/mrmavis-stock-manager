@@ -115,6 +115,16 @@ While this project includes a range of functionalities, it dives into a level of
 
 This project allowed me to demonstrate a variety of front-end skills, including state management (Redux), API integration, and responsive design using TailwindCSS. The assignment introduced some nuanced challenges—particularly concerning the business requirements—which I navigated while balancing development efforts with real-time data handling.
 
+### MOCKAPI.IO
+
+Implemented basic data service with MockAPI.io
+
+```
+Endpoints:
+    - https://mockapi.io/projects/670b7631ac6860a6c2cc1861/products
+    - https://mockapi.io/projects/670b7631ac6860a6c2cc1861/orders
+```
+
 #### Syncing Items: 
 In a real-world implementation, syncing stock replenishment at the end of each day would require integrating a data source to manage restocking, likely based on a location's output or sales performance. This would involve establishing a backend service to track daily inventory updates and replenishing accordingly.
 
