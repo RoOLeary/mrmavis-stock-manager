@@ -1,4 +1,4 @@
-# Orders Management App
+# Product/Orders Management App
 ### Technical Assignment for [Mr.Marvis](https://www.mrmarvis.com/nl)
 
 
@@ -6,7 +6,7 @@ This project is a front-end application designed to manage product orders. Users
 
 While this project covers a range of functionalities and interactions, it certainly dives into a level of complexity that might be a touch more nuanced than typically expected in a coding test. Nevertheless, it was completed with careful attention to detail and quality.
 
-### (Live Demo)[]
+### [Live Demo](https://mrmavis-stock-manager.vercel.app/)
 
 ## Installation
 
