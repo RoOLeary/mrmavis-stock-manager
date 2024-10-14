@@ -1,7 +1,7 @@
 import { useLocation } from 'react-router-dom';
 
 // @ts-expect-error
-const ThankYou = ({ orderNum }:string) => {
+const ThankYou = ({ orderNum }:any) => {
 
     const location = useLocation();
     const { orderId } = location.state || {}; // Get the orderId from state
