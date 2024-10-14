@@ -15,7 +15,7 @@ const Order = () => {
     <div className="container mx-auto py-8">
       
         <div className="information w-1/2 mx-auto p-8 text-gray text-normal">
-            <p>Place your order</p>
+            <p>Complete payment for order number: {orderNumber}</p>
         </div>
         <PurchaseProduct />
       
