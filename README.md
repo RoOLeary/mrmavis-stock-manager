@@ -3,9 +3,9 @@
 
 This project is a front-end application designed to manage product orders. Users can view, filter, and update orders, including modifying their status and handling inventory stock. The application features a clean and responsive interface, integrating with mock APIs to simulate real-world scenarios such as updating product quantities and calculating total revenue based on order statuses.
 
-While this project includes a range of functionalities, it dives into a level of complexity that may go beyond typical coding tests. The solution was implemented with close attention to detail and quality, reflecting a real-world approach to inventory and order management.
+While this project includes a range of functionalities, it dives into a level of complexity that may go beyond typical coding assignmentss. The solution was implemented with close attention to detail and quality, reflecting a real-world approach to inventory and order management.
 
-### [Live Demo](https://mrmavis-stock-manager.vercel.app/)
+### [Live Demo](https://mm-stock-manager-rol.vercel.app/)
 
 ---
 
@@ -13,11 +13,11 @@ While this project includes a range of functionalities, it dives into a level of
 
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/your-repo/orders-management-app.git
+   git clone git@github.com:RoOLeary/mrmavis-stock-manager.git
    ```
 2. **Navigate to the project directory**:
    ```bash
-   cd orders-management-app
+   cd mrmavis-stock-manager
    ```
 
 ### There are two options to install and get started:
@@ -114,5 +114,11 @@ While this project includes a range of functionalities, it dives into a level of
 ## Notes
 
 This project allowed me to demonstrate a variety of front-end skills, including state management (Redux), API integration, and responsive design using TailwindCSS. The assignment introduced some nuanced challenges—particularly concerning the business requirements—which I navigated while balancing development efforts with real-time data handling.
+
+#### Syncing Items: 
+In a real-world implementation, syncing stock replenishment at the end of each day would require integrating a data source to manage restocking, likely based on a location's output or sales performance. This would involve establishing a backend service to track daily inventory updates and replenishing accordingly.
+
+#### Frontend Appearance: 
+Given the scope and complexity of the task, I made a judgment call to focus on the functionality and core business logic rather than investing excessive time on advanced styling. The frontend design is kept basic to strike a balance between feature implementation and visual presentation within the time constraints.
 
 While the timeline was tight, this solution reflects real-world practices and includes a robust set of features for managing product stock and order flows. Further enhancements could be made with additional time for polish and further backend integration.
