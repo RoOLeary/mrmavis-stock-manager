@@ -80,6 +80,16 @@ While this project includes a range of functionalities, it dives into a level of
 
    **Note**: Error states and edge cases (such as insufficient stock or payment failures) would typically be accounted for in a production scenario but were simplified for this assignment.
 
+   **_Card Validation:_**  
+   The card information should match a basic regex validation using the following details:
+   
+   - **Card Number**: `1234 5678 9123 4567`  
+   - **Expiry Date**: Any date later than today  
+   - **CVV**: Any 3 digits  
+   
+   _Make sure to use valid data to simulate a successful transaction._
+
+
 5. **Backend Functionality**:  
    - **Product List**: There is an admin view for managing the product list, displaying a real-time list of products fetched from the API. Users can filter products and see real-time stock updates.
    - **Order Management**: Orders are also displayed in the backend, where users can view, edit, and manage their status. Orders can be marked as paid, pending, or cancelled.
