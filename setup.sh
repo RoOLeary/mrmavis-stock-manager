@@ -2,7 +2,7 @@
 
 # Function to mimic a loading bar
 loading_bar() {
-    bar="########################################"
+    bar="###############################################################"
     barlength=${#bar}
     echo -n "["
     for ((i = 0 ; i <= $barlength ; i++)); do

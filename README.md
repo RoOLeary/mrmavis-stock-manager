@@ -1,7 +1,6 @@
 # Product/Orders Management App
 ### Technical Assignment for [Mr.Marvis](https://www.mrmarvis.com/nl)
 
-
 This project is a front-end application designed to manage product orders. Users can view, filter, and update orders, including modifying their status and handling inventory stock. The application features a clean and responsive interface, and integrates with mock APIs to simulate real-world scenarios such as updating product quantities and calculating total revenue based on order statuses.
 
 While this project covers a range of functionalities and interactions, it certainly dives into a level of complexity that might be a touch more nuanced than typically expected in a coding test. Nevertheless, it was completed with careful attention to detail and quality.
@@ -18,6 +17,26 @@ While this project covers a range of functionalities and interactions, it certai
    ```
    cd orders-management-app
    ```
+
+### There are two options to install and get started:
+
+3. **Run the `setup.sh` bash script**:
+
+  Note: You probably won't need to, but if this gives you any grief, you can run:
+  
+  ```bash
+    chmod +x setup.sh
+  ```
+
+  and then fire it all up. 
+
+  ```bash
+    ./setup.sh
+  ```
+
+
+## OR:
+
 3. **Install dependencies**:
    ```
    npm install
@@ -27,7 +46,21 @@ While this project covers a range of functionalities and interactions, it certai
    npm run dev
    ```
 
-   The app will be available at `http://localhost:3000`.
+## OR:
+
+4. **Start dev server from bash**:
+
+  ```bash
+    chmod +x run.sh
+  ```
+
+  and then fire it all up. 
+
+  ```bash
+    ./run.sh
+  ```
+
+   The app will be available at `http://localhost:5173`.
 
 ## Technologies
 
