@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-// @ts-nocheck
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { Order } from '../types';
 

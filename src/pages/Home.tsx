@@ -1,6 +1,8 @@
 // @ts-nocheck
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import productImg_tshirt from  './../assets/tshirt.png'; 
+import productImg_trousers from './../assets/trousers.png';
 
 const Home = () => {
     const [products, setProducts] = useState([]);
@@ -10,6 +12,8 @@ const Home = () => {
     const [productsPerPage, setProductsPerPage] = useState(8); // Display 8 products per page by default
 
     const navigate = useNavigate(); // Initialize the useNavigate hook
+
+   
 
     const handleMoreInfoClick = (id: string) => {
         navigate(`/product/${id}`); // Navigate to /product/{id} when button is clicked
@@ -115,7 +119,7 @@ const Home = () => {
                         <li key={product.id} className="bg-white p-4 rounded-lg shadow-lg flex flex-col items-center">
                             {/* Placeholder Image */}
                             <img
-                                src="https://via.placeholder.com/150"
+                                src={product.type === 't-shirt' ? productImg_tshirt : productImg_trousers }
                                 alt={product.title}
                                 className="w-32 h-32 object-cover rounded mb-4"
                             />

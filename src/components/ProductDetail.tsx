@@ -1,6 +1,8 @@
 import { SetStateAction, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useGetProductByIdQuery, useGetProductListQuery } from '../services/productApi';
+import productImg_tshirt from  './../assets/tshirt.png'; 
+import productImg_trousers from './../assets/trousers.png';
 
 const ProductDetail = () => {
   const { id } = useParams();
@@ -30,7 +32,7 @@ const ProductDetail = () => {
           {/* Product Image */}
           <div className="product-image">
             <img
-              src="https://via.placeholder.com/600"
+               src={product.type === 't-shirt' ? productImg_tshirt : productImg_trousers }
               alt={product.title}
               className="w-full h-auto rounded shadow-lg"
             />
@@ -87,7 +89,7 @@ const ProductDetail = () => {
             <div key={related.id} className="bg-white rounded shadow-lg p-4">
               <a href={`/product/${related.id}`}>
                 <img
-                  src="https://via.placeholder.com/150"
+                  src={related.type === 't-shirt' ? productImg_tshirt : productImg_trousers }
                   alt={related.title}
                   className="w-full h-auto mb-2"
                 />
